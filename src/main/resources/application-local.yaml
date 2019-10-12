@@ -1,0 +1,8 @@
+
+spring:
+  rabbitmq:
+    username: rabbit_user
+    password: rabbit_pass
+
+
+logging.level.me.efraimgentil.seeker.client.DadosAbertosClient: DEBUG

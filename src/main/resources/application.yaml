@@ -1,0 +1,42 @@
+
+
+server:
+  port: 8090
+
+spring:
+  application:
+    name: seeker
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+  datasource:
+    url: ${SEEKER_DATABASE_URL:jdbc:postgresql://localhost:5432/seeker}?ApplicationName=${spring.application.name}
+    username: ${SEEKER_DB_USER:seeker}
+    password: ${SEEKER_DB_PASS:postgres}
+    hikari:
+      minimumIdle: 1
+      poolName: seeker-pool
+
+  liquibase:
+    user:     ${SEEKER_MIGRATION_DB_USER:seeker}
+    password: ${SEEKER_MIGRATION_DB_PASS:postgres}
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+feign:
+  client:
+    config:
+      dadosAbertosClient:
+        url: "https://dadosabertos.camara.leg.br/api/v2"
+        loggerLevel: full
+
+logging.level.root: INFO
+logging.level.org.apache.commons.beanutils: INFO
