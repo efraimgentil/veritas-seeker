@@ -13,4 +13,11 @@ spring:
   jpa:
     show-sql: true
 
+
+feign:
+  client:
+    config:
+      dadosAbertosClient:
+        loggerLevel: FULL
+
 logging.level.me.efraimgentil.seeker.client.DadosAbertosClient: DEBUG

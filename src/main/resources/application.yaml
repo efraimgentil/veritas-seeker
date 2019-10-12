@@ -35,7 +35,7 @@ feign:
     config:
       dadosAbertosClient:
         url: "https://dadosabertos.camara.leg.br/api/v2"
-        loggerLevel: INFO
+        loggerLevel: NONE
 
 logging.level.root: INFO
 logging.level.org.apache.commons.beanutils: INFO

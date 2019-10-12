@@ -12,7 +12,7 @@ data class PollingCongressman(
         var id: Int?,
 
         @Column(name = "congressman_id")
-        var deputadoId: Long?,
+        var congressmanId: Long?,
 
         @Column(name = "last_pull")
         var lastPull: LocalDate?

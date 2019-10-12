@@ -10,7 +10,7 @@ CREATE TABLE polling_expense (
 
 CREATE TABLE expense_document (
     polling_expense_id bigint not null,
-    hash not null,
+    hash text not null,
     body json not null,
     FOREIGN KEY (polling_expense_id) REFERENCES polling_expense(id)
 )

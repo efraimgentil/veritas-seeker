@@ -42,11 +42,11 @@ class PollingCongressmanServiceTest  {
                         LinkDTO(rel = "last", href = "https://dadosabertos.camara.leg.br/api/v2/deputados?ordem=ASC&ordenarPor=nome&pagina=1&itens=1000")
                 ))
         every { pollingDeputadoRepository.findByCongressmanId(1) } returns Optional.empty()
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now())
 
         pollingDeputadoService.checkNewStateForCongressmans()
 
-        verify(exactly = 1) { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 1 , lastPull = LocalDate.now())) }
+        verify(exactly = 1) { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 1 , lastPull = LocalDate.now())) }
     }
 
     @Test
@@ -60,13 +60,13 @@ class PollingCongressmanServiceTest  {
                 ))
         every { pollingDeputadoRepository.findByCongressmanId(1) } returns Optional.empty()
         every { pollingDeputadoRepository.findByCongressmanId(2) } returns Optional.empty()
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now())
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, deputadoId = 2 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, congressmanId = 2 , lastPull = LocalDate.now())
 
         pollingDeputadoService.checkNewStateForCongressmans()
 
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 1 , lastPull = LocalDate.now())) }
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 2 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 1 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 2 , lastPull = LocalDate.now())) }
     }
 
     @Test fun `should save only the pollingDeputado that does not exists` () {
@@ -77,14 +77,14 @@ class PollingCongressmanServiceTest  {
                         LinkDTO(rel = "self", href = "https://dadosabertos.camara.leg.br/api/v2/deputados?ordem=ASC&ordenarPor=nome&pagina=1&itens=1000"),
                         LinkDTO(rel = "last", href = "https://dadosabertos.camara.leg.br/api/v2/deputados?ordem=ASC&ordenarPor=nome&pagina=1&itens=1000")
                 ))
-        every { pollingDeputadoRepository.findByCongressmanId(1) } returns Optional.of(PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now()))
+        every { pollingDeputadoRepository.findByCongressmanId(1) } returns Optional.of(PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now()))
         every { pollingDeputadoRepository.findByCongressmanId(2) } returns Optional.empty()
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, deputadoId = 2 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, congressmanId = 2 , lastPull = LocalDate.now())
 
         pollingDeputadoService.checkNewStateForCongressmans()
 
-        verify (exactly = 0){ pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 1 , lastPull = LocalDate.now())) }
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 2 , lastPull = LocalDate.now())) }
+        verify (exactly = 0){ pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 1 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 2 , lastPull = LocalDate.now())) }
     }
 
     @Test fun `should keep pooling until last page equals self page` () {
@@ -102,15 +102,15 @@ class PollingCongressmanServiceTest  {
                 ))
         every { pollingDeputadoRepository.findByCongressmanId(1) } returns Optional.empty()
         every { pollingDeputadoRepository.findByCongressmanId(2) } returns Optional.empty()
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now())
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, deputadoId = 2 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 2, congressmanId = 2 , lastPull = LocalDate.now())
 
         pollingDeputadoService.checkNewStateForCongressmans()
 
         verify { dadosAbertosClient.getDeputados(page = 1, limit = 1000, order = "ASC" , orderBy = "nome") }
         verify { dadosAbertosClient.getDeputados(page = 2, limit = 1000, order = "ASC" , orderBy = "nome") }
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 1 , lastPull = LocalDate.now())) }
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, deputadoId = 2 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 1 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 0, congressmanId = 2 , lastPull = LocalDate.now())) }
     }
 
     @Test fun `should return the page whitin the href in the link`() {
@@ -136,14 +136,14 @@ class PollingCongressmanServiceTest  {
                 ultimoStatus = null,
                 uri = null,
                 urlWebsite = null)
-        every { pollingDeputadoRepository.findAllWithLastPullBefore(LocalDate.now().minusDays(1)) } returns setOf(PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now().minusDays(1)))
+        every { pollingDeputadoRepository.findAllWithLastPullBefore(LocalDate.now().minusDays(1)) } returns setOf(PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now().minusDays(1)))
         every { dadosAbertosClient.getDeputado(1) } returns GetDeputadoDTO( dados= deputadoDTO , links = listOf())
         every { rabbitTemplate.convertAndSend(any(), any(), eq(deputadoDTO)) } returns mockk()
-        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now())
+        every { pollingDeputadoRepository.save(ofType(PollingCongressman::class)) } returns PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now())
 
         pollingDeputadoService.pullCongressmanAndPublish()
 
         verify { rabbitTemplate.convertAndSend(RabbitMQConstants.CONGRESSMAN_TOPIC, RabbitMQConstants.NO_ROUTING, deputadoDTO) }
-        verify { pollingDeputadoRepository.save(PollingCongressman(id = 1, deputadoId = 1 , lastPull = LocalDate.now())) }
+        verify { pollingDeputadoRepository.save(PollingCongressman(id = 1, congressmanId = 1 , lastPull = LocalDate.now())) }
     }
 }
