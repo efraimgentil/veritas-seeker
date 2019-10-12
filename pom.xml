@@ -16,7 +16,9 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<kotlin.version>1.2.71</kotlin.version>
+		<kotlin.version>1.3.50</kotlin.version>
+		<!-- Makes the build faster -->
+		<kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 		<spring-cloud.version>Greenwich.SR2</spring-cloud.version>
 	</properties>
 
@@ -125,13 +127,14 @@
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
 				<configuration>
 					<args>
 						<arg>-Xjsr305=strict</arg>
 					</args>
 					<compilerPlugins>
-						<plugin>jpa</plugin>
 						<plugin>spring</plugin>
+						<plugin>jpa</plugin>
 					</compilerPlugins>
 				</configuration>
 				<dependencies>
@@ -140,9 +143,18 @@
 						<artifactId>kotlin-maven-allopen</artifactId>
 						<version>${kotlin.version}</version>
 					</dependency>
+					<dependency>
+						<groupId>org.jetbrains.kotlin</groupId>
+						<artifactId>kotlin-maven-noarg</artifactId>
+						<version>${kotlin.version}</version>
+					</dependency>
 				</dependencies>
 			</plugin>
 		</plugins>
+
 	</build>
+
+
+
 
 </project>

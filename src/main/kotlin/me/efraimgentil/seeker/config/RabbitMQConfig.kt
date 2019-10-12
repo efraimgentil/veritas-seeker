@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean
 @Configuration
 class RabbitMQConfig {
 
+
+
     @Bean
     fun rabbitTemplate(connectionFactory: ConnectionFactory, jsonObjectMapper : ObjectMapper): RabbitTemplate {
         var rabbitTemplate = RabbitTemplate(connectionFactory)

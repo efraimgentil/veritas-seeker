@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.efraimgentil.seeker.client.dto.DespesaDTO
-import me.efraimgentil.seeker.domain.Despesa
+import me.efraimgentil.seeker.config.RabbitMQConstants.EXPENSE_TOPIC
+import me.efraimgentil.seeker.config.RabbitMQConstants.NO_ROUTING
+import me.efraimgentil.seeker.domain.PollingExpense
 import me.efraimgentil.seeker.repository.DespesaRepository
 import org.apache.commons.beanutils.BeanUtils
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -17,12 +18,10 @@ import java.io.File
 import java.lang.RuntimeException
 
 @Service
-class PollingDespesaService(val despesaRepository: DespesaRepository,
+class PollingExpenseService(val despesaRepository: DespesaRepository,
                             val rabbitTemplate: RabbitTemplate) {
 
     fun test2() {
-        var objectMapper = ObjectMapper()
-
         var file = File("/home/efra/Enviroment/Workspaces/veritas/Ano-2019.json")
         var mapa : JsonNode = jacksonObjectMapper().readValue<JsonNode>(file)
 
@@ -43,7 +42,7 @@ class PollingDespesaService(val despesaRepository: DespesaRepository,
         print("Starting")
         while(parser.nextToken() != JsonToken.END_ARRAY){
             var objectStart = parser.currentToken() // START OBJECT
-            var lastFieldName : String = "null"
+            var lastFieldName = "null"
             val despesaDTO = DespesaDTO()
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 if( parser.currentToken == JsonToken.FIELD_NAME){
@@ -66,9 +65,9 @@ class PollingDespesaService(val despesaRepository: DespesaRepository,
 
     private fun publishIfNeeded(despesaDTO: DespesaDTO) {
         if(!despesaRepository.findById(despesaDTO.idDocumento!!).isPresent){
-            var despesa = Despesa(documentId = despesaDTO.idDocumento!!, ano = despesaDTO.ano!!, mes = despesaDTO.mes!!)
+            var despesa = PollingExpense(documentId = despesaDTO.idDocumento!!, year = despesaDTO.ano!!, month = despesaDTO.mes!!)
             despesaRepository.save(despesa)
-            rabbitTemplate.convertAndSend("despesa", "", despesaDTO)
+            rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
         }
     }
 

@@ -1,5 +1,6 @@
 package me.efraimgentil.seeker.client
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,10 +15,9 @@ class DadosAbertosClientIT {
     @Autowired
     lateinit var dadosAbertosClient : DadosAbertosClient
 
+    @Ignore
     @Test
-    fun test(){
-        println(dadosAbertosClient)
-
+    fun shouldCallGetCongressman(){
         println(dadosAbertosClient.getDeputados())
     }
 

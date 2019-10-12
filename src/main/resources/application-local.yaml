@@ -3,6 +3,14 @@ spring:
   rabbitmq:
     username: rabbit_user
     password: rabbit_pass
-
+  datasource:
+    url: jdbc:postgresql://localhost:5432/seeker?ApplicationName=${spring.application.name}
+    username: seeker
+    password: postgres
+  liquibase:
+    user:     seeker
+    password: postgres
+  jpa:
+    show-sql: true
 
 logging.level.me.efraimgentil.seeker.client.DadosAbertosClient: DEBUG
