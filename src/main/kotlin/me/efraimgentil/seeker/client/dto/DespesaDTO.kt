@@ -9,6 +9,7 @@ data class DespesaDTO(
     var descricao: String? = null,
     var descricaoEspecificacao: String? = null,
     var fornecedor: String? = null,
+    var idDeputado: Long? = null,
     var idDocumento: Long? = null,
     var legislatura: Int? = null,
     var lote: String? = null,

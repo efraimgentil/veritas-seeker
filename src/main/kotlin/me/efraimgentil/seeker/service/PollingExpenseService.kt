@@ -10,7 +10,7 @@ import me.efraimgentil.seeker.client.dto.DespesaDTO
 import me.efraimgentil.seeker.config.RabbitMQConstants.EXPENSE_TOPIC
 import me.efraimgentil.seeker.config.RabbitMQConstants.NO_ROUTING
 import me.efraimgentil.seeker.domain.PollingExpense
-import me.efraimgentil.seeker.repository.DespesaRepository
+import me.efraimgentil.seeker.repository.ExpenseRepository
 import org.apache.commons.beanutils.BeanUtils
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
@@ -18,7 +18,7 @@ import java.io.File
 import java.lang.RuntimeException
 
 @Service
-class PollingExpenseService(val despesaRepository: DespesaRepository,
+class PollingExpenseService(val despesaRepository: ExpenseRepository,
                             val rabbitTemplate: RabbitTemplate) {
 
     fun test2() {

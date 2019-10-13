@@ -1,17 +1,20 @@
 package me.efraimgentil.seeker.domain
 
+import java.util.*
 import javax.persistence.*
 
 @Entity
 @Table(name = "polling_expense")
 data class PollingExpense(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id : Long? = null,
     @Column( name = "document_id")
     var documentId: Long,
-    @Column( name = "yeah")
+    @Column( name = "year")
     var year : Int,
     @Column( name = "month")
-    var month : Int
+    var month : Int,
+    @OneToMany(mappedBy = "pollingExpense", cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+    var documents : List<ExpenseDocument>? = null
 )
