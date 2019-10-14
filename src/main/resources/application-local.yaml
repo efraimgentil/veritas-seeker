@@ -7,12 +7,18 @@ spring:
     url: jdbc:postgresql://localhost:5432/seeker?${spring.datasource.connection-properties}
     username: seeker
     password: postgres
-  liquibase:
-    user:     seeker
-    password: postgres
+#  If set will create a new datasource just for liguibase
+#  liquibase:
+#    user:     seeker
+#    password: postgres
   jpa:
     show-sql: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 feign:
   client:
