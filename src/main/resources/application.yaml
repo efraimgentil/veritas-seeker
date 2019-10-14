@@ -12,10 +12,10 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
   datasource:
-    url: ${SEEKER_DATABASE_URL}
+    url: ${SEEKER_DATABASE_URL}?${spring.datasource.connection-properties}
     username: ${SEEKER_DB_USER}
     password: ${SEEKER_DB_PASS}
-    connection-properties: stringtype=unspecified;ApplicationName=${spring.application.name}
+    connection-properties: stringtype=unspecified&ApplicationName=${spring.application.name}
     hikari:
       minimumIdle: 1
       poolName: seeker-pool

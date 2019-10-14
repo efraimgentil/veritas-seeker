@@ -4,10 +4,9 @@ spring:
     username: rabbit_user
     password: rabbit_pass
   datasource:
-    url: jdbc:postgresql://localhost:5432/seeker?stringtype=unspecified&ApplicationName=${spring.application.name}
+    url: jdbc:postgresql://localhost:5432/seeker?${spring.datasource.connection-properties}
     username: seeker
     password: postgres
-    connection-properties: stringtype=unspecified;ApplicationName=${spring.application.name}
   liquibase:
     user:     seeker
     password: postgres
