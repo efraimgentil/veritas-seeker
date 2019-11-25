@@ -35,7 +35,7 @@ class LocalRabbitMQConfig {
 
     @Bean
     fun deputadoTopic() : TopicExchange {
-        return TopicExchange("deputado" , true , false)
+        return TopicExchange(RabbitMQConstants.CONGRESSMAN_TOPIC , true , false)
     }
 
     @Bean

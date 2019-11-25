@@ -35,6 +35,10 @@ spring:
           lob:
             non_contextual_creation: true
 
+dadosAbertos:
+  cotas:
+    downloadUrl: "https://www.camara.leg.br/cotas"
+
 feign:
   client:
     config:

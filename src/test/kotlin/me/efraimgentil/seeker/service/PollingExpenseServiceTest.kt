@@ -2,7 +2,7 @@ package me.efraimgentil.seeker.service
 
 import org.junit.Test
 
-class PollingDespesaServiceTest {
+class PollingExpenseServiceTest {
 
 //    @Test
 //    fun test(){

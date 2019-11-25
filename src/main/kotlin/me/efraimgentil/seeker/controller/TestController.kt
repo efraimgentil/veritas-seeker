@@ -9,30 +9,25 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(value = ["/test"])
-class TestController(var pollingDeputadoService: PollingCongressmanService, val pollingDespesaService: PollingExpenseService) {
+class TestController(var pollingCongressmanService: PollingCongressmanService, var pollingExpenseService: PollingExpenseService) {
 
-    @GetMapping(value = ["/checkForNewDeputados"])
-    fun checkForNewDeputados(){
-        pollingDeputadoService.checkNewStateForCongressmans()
+    @GetMapping(value = ["/checkForNewCongressman"])
+    fun checkForNewCongressman(){
+        pollingCongressmanService.checkNewStateForCongressmans()
     }
 
     @GetMapping(value = ["/pullAndPublishAll"])
     fun pullAndPublishAll(){
-        pollingDeputadoService.pullCongressmanAndPublish()
+        pollingCongressmanService.pullCongressmanAndPublish()
     }
 
-    @GetMapping(value = ["/pullAndPublish/{deputadoId}"])
-    fun checkForNewDeputados(@PathVariable("deputadoId") deputadoId : Long){
-        pollingDeputadoService.pullAndPublishCongressman(deputadoId)
+    @GetMapping(value = ["/pullAndPublish/{congressmanId}"])
+    fun checkForNewCongressman(@PathVariable("congressmanId") congressmanId : Long){
+        pollingCongressmanService.pullAndPublishCongressman(congressmanId)
     }
 
-    @GetMapping(value = ["/testStream"])
-    fun testStream(){
-        pollingDespesaService.importFile()
-    }
-
-    @GetMapping(value = ["/testFile"])
-    fun testFile(){
-        pollingDespesaService.test2()
+    @GetMapping(value = ["/pullAndPublishExpense/{year}"])
+    fun pullAndPublishExpense(@PathVariable("year") year : Int){
+        pollingExpenseService.pullYear(year)
     }
 }
