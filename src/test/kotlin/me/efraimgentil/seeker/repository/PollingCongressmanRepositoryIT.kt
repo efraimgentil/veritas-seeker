@@ -15,12 +15,13 @@ class PollingCongressmanRepositoryIT : AbstractIT() {
     @Autowired
     lateinit var expenseRepository: ExpenseRepository
 
+    // TODO remove?
     @Ignore
     @Test
     fun shouldSavePollingExpenseAndExpenseDocument(){
         val readValue = jacksonObjectMapper().readValue<DespesaDTO>(ClassPathResource("/json/congressmanExpenseExample.json").file)
 
-        val pollingExpense = PollingExpense(documentId =  readValue.idDocumento!!
+        val pollingExpense = PollingExpense(hash =  "readValue.idDocumento!!"
                 , month = readValue.mes!!
                 , year = readValue.ano!!)
         pollingExpense.documents = listOf(ExpenseDocument(hash = "hash"

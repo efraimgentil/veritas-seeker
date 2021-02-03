@@ -69,7 +69,7 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
     }
 
     private fun startReadingFile(parser: JsonParser) {
-        print("Starting")
+        print("Starting") // TODO DEBUG
         while (parser.nextToken() != JsonToken.END_ARRAY) {
             var objectStart = parser.currentToken() // START OBJECT
             var fieldName = "null"
@@ -90,21 +90,18 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
             }
             publishIfNeeded(despesaDTO)
         }
-        print("Over")
+        print("Over") // TODO DEBUG
     }
 
     private fun publishIfNeeded(despesaDTO: DespesaDTO) {
-        println("Expense ${despesaDTO}")
-
+        println("Expense ${despesaDTO}") // TODO DEBUG
         val documentHash = documentHasher.generateHashFor(despesaDTO)
-        print(documentHash)
-        val expense = expenseRepository.findById(despesaDTO.idDocumento!!)
-        println(expense)
-        if (!expense.isPresent) {
-            var despesa = PollingExpense(documentId = despesaDTO.idDocumento!!, year = despesaDTO.ano!!, month = despesaDTO.mes!!)
+        val expense = expenseRepository.findByHash(documentHash)
+        if(expense == null){
+            val despesa = PollingExpense(hash = documentHash, year = despesaDTO.ano!!, month = despesaDTO.mes!!)
             expenseRepository.save(despesa)
             // SKIP this for now
-//            rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
+            // rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
         }
     }
 
@@ -115,7 +112,4 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
                 , JsonToken.VALUE_NUMBER_FLOAT
                 , JsonToken.VALUE_NUMBER_INT).contains(jsonToken)
     }
-
-
-
 }

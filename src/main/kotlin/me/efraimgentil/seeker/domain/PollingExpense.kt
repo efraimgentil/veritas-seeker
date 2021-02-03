@@ -9,8 +9,8 @@ data class PollingExpense(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id : Long? = null,
-    @Column( name = "document_id")
-    var documentId: Long,
+    @Column( name = "hash")
+    var hash: String,
     @Column( name = "year")
     var year : Int,
     @Column( name = "month")
