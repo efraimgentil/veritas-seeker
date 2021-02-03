@@ -4,12 +4,9 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import me.efraimgentil.seeker.client.dto.DespesaDTO
-import me.efraimgentil.seeker.config.RabbitMQConstants.EXPENSE_TOPIC
-import me.efraimgentil.seeker.config.RabbitMQConstants.NO_ROUTING
 import me.efraimgentil.seeker.domain.PollingExpense
 import me.efraimgentil.seeker.repository.ExpenseRepository
 import org.apache.commons.beanutils.BeanUtils
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
@@ -26,7 +23,7 @@ import java.util.zip.ZipInputStream
 
 @Service
 class PollingExpenseService(val expenseRepository: ExpenseRepository,
-                            val rabbitTemplate: RabbitTemplate,
+                            val documentHasher: DocumentHasher,
                             @Value("\${dadosAbertos.cotas.downloadUrl}") val cotasDownloadUrl: String) {
 
     // comparing with stream reading
@@ -40,7 +37,18 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
 //        }
 //    }
 
-    fun downloadJsonZip(year : Int) : String {
+    fun pullYear(year: Int) {
+        readFileAndPublish(Paths.get(downloadJsonZip(year)).toFile())
+    }
+
+    private fun readFileAndPublish(fileToImport: File) {
+        val parser = JsonFactory().createParser(fileToImport)
+        parser.nextToken() // JsonToken.START_OBJECT;
+        startReadingFile(parser)
+        parser.close()
+    }
+
+    private fun downloadJsonZip(year : Int) : String {
         // Streams the response instead of loading it all in memory
         val responseExtractor = ResponseExtractor { response ->
             // Here I write the response to a file but do what you like
@@ -60,30 +68,22 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
         return "Ano-$year.json"
     }
 
-    //TODO add download feature, to retrieve the file in the Dados Abertos unzip and read the stream
-    fun readFileAndPublish(fileToImport: File) {
-        val parser = JsonFactory().createParser(fileToImport)
-        parser.nextToken() // JsonToken.START_OBJECT;
-        startReadingFile(parser)
-        parser.close()
-    }
-
     private fun startReadingFile(parser: JsonParser) {
         print("Starting")
         while (parser.nextToken() != JsonToken.END_ARRAY) {
             var objectStart = parser.currentToken() // START OBJECT
-            var lastFieldName = "null"
+            var fieldName = "null"
             val despesaDTO = DespesaDTO()
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 if (parser.currentToken == JsonToken.FIELD_NAME) {
-                    lastFieldName = parser.getText()
+                    fieldName = parser.getText()
                 }
                 if (isValue(parser.currentToken)) {
                     when (parser.currentToken) {
-                        JsonToken.VALUE_STRING -> BeanUtils.setProperty(despesaDTO, lastFieldName, parser.getText())
-                        JsonToken.VALUE_FALSE, JsonToken.VALUE_TRUE -> BeanUtils.setProperty(despesaDTO, lastFieldName, parser.getValueAsBoolean())
-                        JsonToken.VALUE_NUMBER_FLOAT -> BeanUtils.setProperty(despesaDTO, lastFieldName, parser.getValueAsDouble())
-                        JsonToken.VALUE_NUMBER_INT -> BeanUtils.setProperty(despesaDTO, lastFieldName, parser.getValueAsInt())
+                        JsonToken.VALUE_STRING -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getText())
+                        JsonToken.VALUE_FALSE, JsonToken.VALUE_TRUE -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsBoolean())
+                        JsonToken.VALUE_NUMBER_FLOAT -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsDouble())
+                        JsonToken.VALUE_NUMBER_INT -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsInt())
                         else -> throw RuntimeException("Not supported")
                     }
                 }
@@ -95,12 +95,16 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
 
     private fun publishIfNeeded(despesaDTO: DespesaDTO) {
         println("Expense ${despesaDTO}")
+
+        val documentHash = documentHasher.generateHashFor(despesaDTO)
+        print(documentHash)
         val expense = expenseRepository.findById(despesaDTO.idDocumento!!)
         println(expense)
         if (!expense.isPresent) {
             var despesa = PollingExpense(documentId = despesaDTO.idDocumento!!, year = despesaDTO.ano!!, month = despesaDTO.mes!!)
             expenseRepository.save(despesa)
-            rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
+            // SKIP this for now
+//            rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
         }
     }
 
@@ -112,7 +116,6 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
                 , JsonToken.VALUE_NUMBER_INT).contains(jsonToken)
     }
 
-    fun pullYear(year: Int) {
-        readFileAndPublish(Paths.get(downloadJsonZip(year)).toFile())
-    }
+
+
 }

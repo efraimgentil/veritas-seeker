@@ -10,8 +10,7 @@ class PollingExpenseServiceIT : AbstractIT() {
 
     @Test
     fun test(){
-
-        pollingExpenseService.downloadJsonZip(2018)
+//        pollingExpenseService.downloadJsonZip(2018)
     }
 
 }
