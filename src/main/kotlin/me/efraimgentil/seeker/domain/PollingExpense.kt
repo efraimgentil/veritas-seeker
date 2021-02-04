@@ -15,6 +15,12 @@ data class PollingExpense(
     var year : Int,
     @Column( name = "month")
     var month : Int,
-    @OneToMany(mappedBy = "pollingExpense", cascade = [CascadeType.PERSIST, CascadeType.MERGE])
-    var documents : List<ExpenseDocument>? = null
-)
+    @OneToOne(mappedBy = "pollingExpense", cascade = [CascadeType.PERSIST])
+    @PrimaryKeyJoinColumn
+    var document : ExpenseDocument? = null
+){
+    @PrePersist
+    fun beforePersist(){
+        document?.let { it.pollingExpense = this }
+    }
+}

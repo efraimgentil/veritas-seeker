@@ -6,13 +6,12 @@ import javax.persistence.*
 @Table(name = "expense_document")
 data class ExpenseDocument(
     @Id
-    @Column( name = "hash")
-    var hash: String,
-    @Column(name = "polling_expense_id", updatable = false, insertable = false)
+    @Column(name = "polling_expense_id")
     var pollingExpenseId : Long? = null,
-    @ManyToOne
-    var pollingExpense : PollingExpense,
-    //@Convert(converter = JsonConverter::class)
+    @OneToOne
+    @MapsId
+    @JoinColumn(name="polling_expense_id")
+    var pollingExpense : PollingExpense? = null,
     @Column( name = "body", columnDefinition = "json")
     var body : String
 )

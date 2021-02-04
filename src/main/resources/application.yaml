@@ -15,6 +15,7 @@ spring:
     url: ${SEEKER_DATABASE_URL}?${spring.datasource.connection-properties}
     username: ${SEEKER_DB_USER}
     password: ${SEEKER_DB_PASS}
+    # stringtype enable postgres connection to infer the json type
     connection-properties: stringtype=unspecified&ApplicationName=${spring.application.name}
     hikari:
       minimum-idle: 2

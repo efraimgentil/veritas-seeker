@@ -3,10 +3,13 @@ package me.efraimgentil.seeker.service
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
-import me.efraimgentil.seeker.client.dto.DespesaDTO
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import me.efraimgentil.seeker.domain.ExpenseDocument
 import me.efraimgentil.seeker.domain.PollingExpense
+import me.efraimgentil.seeker.repository.ExpenseDocumentRepository
 import me.efraimgentil.seeker.repository.ExpenseRepository
-import org.apache.commons.beanutils.BeanUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
@@ -23,7 +26,9 @@ import java.util.zip.ZipInputStream
 
 @Service
 class PollingExpenseService(val expenseRepository: ExpenseRepository,
-                            val documentHasher: DocumentHasher,
+                            val expenseDocumentRepository: ExpenseDocumentRepository,
+                            val jsonHasher: JsonHasher,
+                            val objectMapper: ObjectMapper,
                             @Value("\${dadosAbertos.cotas.downloadUrl}") val cotasDownloadUrl: String) {
 
     // comparing with stream reading
@@ -70,35 +75,36 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
 
     private fun startReadingFile(parser: JsonParser) {
         print("Starting") // TODO DEBUG
+
         while (parser.nextToken() != JsonToken.END_ARRAY) {
             var objectStart = parser.currentToken() // START OBJECT
+            var node =  JsonNodeFactory(true).objectNode()
             var fieldName = "null"
-            val despesaDTO = DespesaDTO()
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 if (parser.currentToken == JsonToken.FIELD_NAME) {
                     fieldName = parser.getText()
                 }
                 if (isValue(parser.currentToken)) {
                     when (parser.currentToken) {
-                        JsonToken.VALUE_STRING -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getText())
-                        JsonToken.VALUE_FALSE, JsonToken.VALUE_TRUE -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsBoolean())
-                        JsonToken.VALUE_NUMBER_FLOAT -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsDouble())
-                        JsonToken.VALUE_NUMBER_INT -> BeanUtils.setProperty(despesaDTO, fieldName, parser.getValueAsInt())
+                        JsonToken.VALUE_STRING ->  node.put(fieldName,  parser.getText())
+                        JsonToken.VALUE_FALSE, JsonToken.VALUE_TRUE ->  node.put(fieldName,  parser.getValueAsBoolean())
+                        JsonToken.VALUE_NUMBER_FLOAT -> node.put(fieldName, parser.getValueAsDouble())
+                        JsonToken.VALUE_NUMBER_INT -> node.put(fieldName, parser.getValueAsInt())
                         else -> throw RuntimeException("Not supported")
                     }
                 }
             }
-            publishIfNeeded(despesaDTO)
+            publishIfNeeded(node)
         }
         print("Over") // TODO DEBUG
     }
 
-    private fun publishIfNeeded(despesaDTO: DespesaDTO) {
-        println("Expense ${despesaDTO}") // TODO DEBUG
-        val documentHash = documentHasher.generateHashFor(despesaDTO)
+    private fun publishIfNeeded(node : JsonNode) {
+        println("Expense ${node}") // TODO DEBUG
+        val documentHash = jsonHasher.generateHashFor(node)
         val expense = expenseRepository.findByHash(documentHash)
         if(expense == null){
-            val despesa = PollingExpense(hash = documentHash, year = despesaDTO.ano!!, month = despesaDTO.mes!!)
+            val despesa = PollingExpense(hash = documentHash, year = node.get("ano").asInt()!!, month = node.get("mes").asInt()!!, document = ExpenseDocument(body = node.toString()))
             expenseRepository.save(despesa)
             // SKIP this for now
             // rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)

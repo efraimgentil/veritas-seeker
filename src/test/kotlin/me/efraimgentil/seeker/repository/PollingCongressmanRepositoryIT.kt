@@ -24,9 +24,9 @@ class PollingCongressmanRepositoryIT : AbstractIT() {
         val pollingExpense = PollingExpense(hash =  "readValue.idDocumento!!"
                 , month = readValue.mes!!
                 , year = readValue.ano!!)
-        pollingExpense.documents = listOf(ExpenseDocument(hash = "hash"
-                , body = jacksonObjectMapper().writeValueAsString(readValue)
-                , pollingExpense = pollingExpense ))
+//        pollingExpense.documents = listOf(ExpenseDocument(hash = "hash"
+//                , body = jacksonObjectMapper().writeValueAsString(readValue)
+//                , pollingExpense = pollingExpense ))
 
         expenseRepository.save(pollingExpense)
     }

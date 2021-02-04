@@ -7,18 +7,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import me.efraimgentil.seeker.client.dto.DespesaDTO
 import org.springframework.stereotype.Service
 import org.springframework.util.DigestUtils
-import java.util.*
+import java.util.TreeMap
 
 @Service
-class DocumentHasher() {
+class JsonHasher() {
     val objectMapper = ObjectMapper()
 
     init {
         objectMapper.setNodeFactory(SortingNodeFactory())
     }
 
-    fun generateHashFor(despesaDTO : DespesaDTO) : String {
-        return DigestUtils.md5DigestAsHex(orderedJsonByteArray(despesaDTO))
+    fun generateHashFor(jsonNode : JsonNode) : String {
+        return DigestUtils.md5DigestAsHex(orderedJsonByteArray(jsonNode))
     }
 
     private fun <T> orderedJsonByteArray(target : T) : ByteArray =
