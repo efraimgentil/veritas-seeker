@@ -4,4 +4,4 @@ logging.level.org.apache.commons.beanutils: INFO
 
 dadosAbertos:
   cotas:
-    downloadUrl: "http://localhost:${wiremock.port:8090}/cotas"
+    downloadUrl: "http://localhost:${wiremock.port:9999}/cotas"

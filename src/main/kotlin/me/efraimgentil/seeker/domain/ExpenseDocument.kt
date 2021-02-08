@@ -8,10 +8,14 @@ data class ExpenseDocument(
     @Id
     @Column(name = "polling_expense_id")
     var pollingExpenseId : Long? = null,
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name="polling_expense_id")
     var pollingExpense : PollingExpense? = null,
     @Column( name = "body", columnDefinition = "json")
     var body : String
-)
+){
+    override fun toString(): String {
+        return "{ \"pollingExpenseId\" : ${pollingExpenseId}, \"body\": ${body} }"
+    }
+}
