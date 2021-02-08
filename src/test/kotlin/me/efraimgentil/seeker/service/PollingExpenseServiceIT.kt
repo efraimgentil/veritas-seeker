@@ -24,7 +24,7 @@ class PollingExpenseServiceIT : AbstractIT() {
     @Before
     fun beforeEach() {
         // clean entire polling_expanse table (and related) before any test
-        dataSource.connection.prepareStatement("truncate polling_expense cascade;").execute()
+        dataSource.connection.prepareStatement("truncate expense cascade;").execute()
     }
 
     @Test

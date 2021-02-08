@@ -4,11 +4,9 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import me.efraimgentil.seeker.domain.ExpenseDocument
-import me.efraimgentil.seeker.domain.PollingExpense
-import me.efraimgentil.seeker.repository.ExpenseDocumentRepository
+import me.efraimgentil.seeker.domain.Expense
 import me.efraimgentil.seeker.repository.ExpenseRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
@@ -26,9 +24,7 @@ import java.util.zip.ZipInputStream
 
 @Service
 class PollingExpenseService(val expenseRepository: ExpenseRepository,
-                            val expenseDocumentRepository: ExpenseDocumentRepository,
                             val jsonHasher: JsonHasher,
-                            val objectMapper: ObjectMapper,
                             @Value("\${dadosAbertos.cotas.downloadUrl}") val cotasDownloadUrl: String) {
 
     // comparing with stream reading
@@ -99,13 +95,13 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
         print("Over") // TODO DEBUG
     }
 
-    private fun publishIfNeeded(node : JsonNode) {
-        println("Expense ${node}") // TODO DEBUG
-        val documentHash = jsonHasher.generateHashFor(node)
+    private fun publishIfNeeded(rawExpenseBody : JsonNode) {
+        println("Expense ${rawExpenseBody}") // TODO DEBUG
+        val documentHash = jsonHasher.generateHashFor(rawExpenseBody)
         val expense = expenseRepository.findByHash(documentHash)
         if(expense == null){
-            val despesa = PollingExpense(hash = documentHash, year = node.get("ano").asInt()!!, month = node.get("mes").asInt()!!, document = ExpenseDocument(body = node.toString()))
-            expenseRepository.save(despesa)
+            val expense = Expense(hash = documentHash, year = rawExpenseBody.get("ano").asInt()!!, month = rawExpenseBody.get("mes").asInt()!!, document = ExpenseDocument(body = rawExpenseBody.toString()))
+            expenseRepository.save(expense)
             // SKIP this for now
             // rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
         }

@@ -1,7 +1,7 @@
 --liquibase formatted sql
 --changeset efraimgentil:002
 
-CREATE TABLE polling_expense (
+CREATE TABLE expense (
     id bigserial primary key,
     hash text not null unique,
     year int not null,
@@ -9,7 +9,7 @@ CREATE TABLE polling_expense (
 );
 
 CREATE TABLE expense_document (
-    polling_expense_id bigint not null,
+    expense_id bigint not null,
     body json not null,
-    FOREIGN KEY (polling_expense_id) REFERENCES polling_expense(id)
+    FOREIGN KEY (expense_id) REFERENCES expense(id)
 )
