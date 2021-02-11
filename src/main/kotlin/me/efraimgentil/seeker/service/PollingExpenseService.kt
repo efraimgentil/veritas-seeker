@@ -11,7 +11,6 @@ import me.efraimgentil.seeker.repository.ExpenseRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RequestCallback
 import org.springframework.web.client.ResponseExtractor
 import org.springframework.web.client.RestTemplate
@@ -20,21 +19,7 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.util.concurrent.ExecutorCompletionService
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.zip.ZipInputStream
-import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
-import javax.persistence.EntityManager
-import org.springframework.transaction.TransactionDefinition
-import org.springframework.transaction.support.AbstractPlatformTransactionManager
-
-import org.springframework.transaction.support.DefaultTransactionDefinition
-
-
-
 
 
 @Service
@@ -106,9 +91,9 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
                 }
             }
 
-            val publishIfNeeded = publishIfNeeded(node)
-            if(publishIfNeeded != null) {
-                arrayList.add(publishIfNeeded)
+            val expense = creteExpenseIfNeeded(node)
+            if(expense != null) {
+                arrayList.add(expense)
                 if(arrayList.size >= 500) {
                     expenseRepository.saveAll(arrayList)
                     arrayList.clear()
@@ -121,7 +106,7 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
         print("Over") // TODO DEBUG
     }
 
-    private fun publishIfNeeded(rawExpenseBody : JsonNode) : Expense? {
+    private fun creteExpenseIfNeeded(rawExpenseBody : JsonNode) : Expense? {
         println("Expense ${rawExpenseBody}") // TODO DEBUG
         val documentHash = jsonHasher.generateHashFor(rawExpenseBody)
         val expense = expenseRepository.countByHash(documentHash)
