@@ -11,6 +11,7 @@ import me.efraimgentil.seeker.repository.ExpenseRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RequestCallback
 import org.springframework.web.client.ResponseExtractor
 import org.springframework.web.client.RestTemplate
@@ -19,7 +20,21 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.util.concurrent.ExecutorCompletionService
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.zip.ZipInputStream
+import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
+import javax.persistence.EntityManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.support.AbstractPlatformTransactionManager
+
+import org.springframework.transaction.support.DefaultTransactionDefinition
+
+
+
 
 
 @Service
@@ -71,7 +86,7 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
 
     private fun startReadingFile(parser: JsonParser) {
         print("Starting") // TODO DEBUG
-
+        val arrayList = ArrayList<Expense>(500)
         while (parser.nextToken() != JsonToken.END_ARRAY) {
             var objectStart = parser.currentToken() // START OBJECT
             var node =  JsonNodeFactory(true).objectNode()
@@ -90,21 +105,32 @@ class PollingExpenseService(val expenseRepository: ExpenseRepository,
                     }
                 }
             }
-            publishIfNeeded(node)
+
+            val publishIfNeeded = publishIfNeeded(node)
+            if(publishIfNeeded != null) {
+                arrayList.add(publishIfNeeded)
+                if(arrayList.size >= 500) {
+                    expenseRepository.saveAll(arrayList)
+                    arrayList.clear()
+                }
+            }
+        }
+        if(!arrayList.isEmpty()){
+            expenseRepository.saveAll(arrayList)
         }
         print("Over") // TODO DEBUG
     }
 
-    private fun publishIfNeeded(rawExpenseBody : JsonNode) {
+    private fun publishIfNeeded(rawExpenseBody : JsonNode) : Expense? {
         println("Expense ${rawExpenseBody}") // TODO DEBUG
         val documentHash = jsonHasher.generateHashFor(rawExpenseBody)
-        val expense = expenseRepository.findByHash(documentHash)
-        if(expense == null){
-            val expense = Expense(hash = documentHash, year = rawExpenseBody.get("ano").asInt()!!, month = rawExpenseBody.get("mes").asInt()!!, document = ExpenseDocument(body = rawExpenseBody.toString()))
-            expenseRepository.save(expense)
+        val expense = expenseRepository.countByHash(documentHash)
+        if(expense == 0L){
+            return Expense(hash = documentHash, year = rawExpenseBody.get("ano").asInt()!!, month = rawExpenseBody.get("mes").asInt()!!, document = ExpenseDocument(body = rawExpenseBody.toString()))
             // SKIP this for now
             // rabbitTemplate.convertAndSend(EXPENSE_TOPIC, NO_ROUTING, despesaDTO)
         }
+        return null
     }
 
     private fun isValue(jsonToken: JsonToken): Boolean {
